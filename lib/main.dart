@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:thermion_flutter/thermion_flutter.dart';
-import 'package:vector_math/vector_math_64.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3, makeViewMatrix;
 
 void main() {
   runApp(const MyApp());
@@ -38,6 +38,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late DelegateInputHandler _fixedOrbitInputHandler;
   late DelegateInputHandler _freeFlightInputHandler;
+  final mininumDistance = -7.0;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _thermionViewer = await ThermionFlutterPlugin.createViewer();
       var entity =
-          await _thermionViewer!.loadGlb("assets/test_2.glb", keepData: true);
+          await _thermionViewer!.loadGlb("assets/Fox.glb", keepData: true);
       await _thermionViewer!.transformToUnitCube(entity);
       await _thermionViewer!.loadSkybox("assets/default_env_skybox.ktx");
       await _thermionViewer!.loadIbl("assets/default_env_ibl.ktx");
@@ -54,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       _fixedOrbitInputHandler = DelegateInputHandler.fixedOrbit(
         _thermionViewer!,
-        minimumDistance: 7.0,
+        minimumDistance: mininumDistance,
       )
         ..setActionForType(InputType.MMB_HOLD_AND_MOVE, InputAction.ROTATE)
         ..setActionForType(InputType.SCALE1, InputAction.ROTATE)
@@ -76,12 +77,13 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isOrbit = true;
 
   void reset() async {
-    var initialPosition = Vector3(0, 0, 10);
-    var lookAt = Vector3(0, 0, 0);
-    var up = Vector3(0, 1, 0);
-    var viewMatrix = createViewMatrix(initialPosition, lookAt, up);
+    var initialPosition = Vector3(0, 0, -mininumDistance);
+    var lookAt = Vector3.zero();
+    var up = Vector3(0, 1.0, 0);
+    var viewMatrix = makeViewMatrix(initialPosition, lookAt, up);
     viewMatrix.invert();
     await _thermionViewer!.setCameraModelMatrix4(viewMatrix);
+    setState(() {});
   }
 
   @override
@@ -106,7 +108,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {});
                 },
                 child: Text("Switch to ${isOrbit ? "Free Flight" : "Orbit"}")),
-            ElevatedButton(onPressed: () {}, child: Text("Rest"))
+            ElevatedButton(
+              onPressed: () => reset(),
+              child: Text("Reset"),
+            )
           ],
         )
       ],
