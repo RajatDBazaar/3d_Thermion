@@ -6,9 +6,9 @@ import 'package:vector_math/vector_math_64.dart' show Vector3, makeViewMatrix;
 
 void main() {
   runApp(const MyApp());
-  Logger.root.onRecord.listen((record) {
-    print(record);
-  });
+  // Logger.root.onRecord.listen((record) {
+  //   print(record);
+  // });
 }
 
 class MyApp extends StatelessWidget {
@@ -46,8 +46,11 @@ class _MyHomePageState extends State<MyHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _thermionViewer = await ThermionFlutterPlugin.createViewer();
       var entity =
-          await _thermionViewer!.loadGlb("assets/Fox.glb", keepData: true);
+          await _thermionViewer!.loadGlb("assets/test_2.glb", keepData: true);
       await _thermionViewer!.transformToUnitCube(entity);
+
+      // await _thermionViewer!
+      //     .setBackgroundImage("assets/file_viewer_bg.png", fillHeight: true);
       await _thermionViewer!.loadSkybox("assets/default_env_skybox.ktx");
       await _thermionViewer!.loadIbl("assets/default_env_ibl.ktx");
       await _thermionViewer!.setPostProcessing(true);
